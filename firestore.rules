@@ -15,5 +15,28 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time;
       allow update, delete: if false;
     }
+
+    // One doc per visitor, created once; the stats counter may only go up by one together with it.
+    match /members/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['joinedAt'])
+        && request.resource.data.joinedAt == request.time;
+      allow update, delete: if false;
+    }
+
+    match /stats/chat {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.count == 1
+        && request.resource.data.keys().hasOnly(['count'])
+        && existsAfter(/databases/$(database)/documents/members/$(request.auth.uid));
+      allow update: if request.auth != null
+        && request.resource.data.count == resource.data.count + 1
+        && request.resource.data.keys().hasOnly(['count'])
+        && !exists(/databases/$(database)/documents/members/$(request.auth.uid))
+        && existsAfter(/databases/$(database)/documents/members/$(request.auth.uid));
+      allow delete: if false;
+    }
   }
 }

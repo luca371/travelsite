@@ -4,6 +4,10 @@ import { signInAnonymously } from "firebase/auth";
 import {
   addDoc,
   collection,
+  doc,
+  getDoc,
+  increment,
+  writeBatch,
   limitToLast,
   onSnapshot,
   orderBy,
@@ -24,6 +28,7 @@ export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [error, setError] = useState("");
+  const [total, setTotal] = useState(null);
   const endRef = useRef(null);
 
   useEffect(() => {
@@ -41,6 +46,34 @@ export default function Chat() {
       () => setError("Couldn't load messages.")
     );
   }, [uid]);
+
+  useEffect(() => {
+    if (!uid) return undefined;
+    return onSnapshot(
+      doc(db, "stats", "chat"),
+      (snap) => setTotal(snap.exists() ? snap.data().count : 0),
+      () => {}
+    );
+  }, [uid]);
+
+  // Count each visitor once, the first time they join with a name.
+  useEffect(() => {
+    if (!uid || !name) return;
+    (async () => {
+      try {
+        const member = doc(db, "members", uid);
+        if ((await getDoc(member)).exists()) return;
+        const stats = doc(db, "stats", "chat");
+        const batch = writeBatch(db);
+        batch.set(member, { joinedAt: serverTimestamp() });
+        const exists = (await getDoc(stats)).exists();
+        batch.set(stats, { count: exists ? increment(1) : 1 }, { merge: true });
+        await batch.commit();
+      } catch {
+        // Counting is best-effort; chatting still works.
+      }
+    })();
+  }, [uid, name]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -99,7 +132,9 @@ export default function Chat() {
         <Link className="back" to="/">←</Link>
         <div>
           <strong>Founders chat</strong>
-          <span>Open to everyone at GoTech</span>
+          <span>
+            {total ? `${total} ${total === 1 ? "person" : "people"} joined` : "Open to everyone at GoTech"}
+          </span>
         </div>
       </header>
 
