@@ -131,10 +131,11 @@ export default function Chat() {
       <header className="chat-head">
         <Link className="back" to="/">←</Link>
         <div>
-          <strong>Founders chat</strong>
-          <span>
-            {total ? `${total} ${total === 1 ? "person" : "people"} joined` : "Open to everyone at GoTech"}
-          </span>
+          <strong>
+            Founders chat
+            {total ? ` - ${total} ${total === 1 ? "person" : "people"} in the chat` : ""}
+          </strong>
+          <span>Open to everyone at GoTech</span>
         </div>
       </header>
 
