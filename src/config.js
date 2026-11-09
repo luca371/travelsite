@@ -3,8 +3,7 @@
 export const APP_NAME = "Travel Force";
 export const TAGLINE = "Your trips, planned with AI. Passport included.";
 
-// TODO: replace the id with the real App Store id (App Store Connect → App Information → Apple ID).
-export const APP_STORE_URL = "https://apps.apple.com/app/travel-force/idAPP_STORE_ID_PLACEHOLDER";
+export const APP_STORE_URL = "https://apps.apple.com/us/app/travel-force/id6806651443";
 
 // TODO: add every founder. `links` are shown as buttons; use mailto:, tel:, https:// or wa.me links.
 export const FOUNDERS = [
